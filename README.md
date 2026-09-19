@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Happy Birthday Intal!</title>
+  <title>Happy Birthday!</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap');
 
@@ -328,7 +328,8 @@
 
     <!-- Title -->
     <h1 class="title">Happy Birthday Intal!</h1>
-    <p class="instruction" id="instruction">Click anywhere to start music & blow candle!</p>
+    <p class="instruction" id="instruction"> Click or blow into your microphone to extinguish the candle</p>
+    <p class="status" id="status">Microphone is waiting for your first tap.</p>
 
     <!-- 3D Cake Container -->
     <div class="cake-container" id="cake">
@@ -349,179 +350,261 @@
     <!-- Birthday Message Popup Card -->
     <div class="message-card" id="messageCard">
       <h2>Make a Wish! 🎉</h2>
-      <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead, God Bless you always Intal!💙💙💙💙💙</p>
+      <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead, God bless you always Intal💙!</p>
     </div>
   </div>
 
+  <style>
+    .status {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: -12px;
+      z-index: 10;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    .candle.ready {
+      filter: drop-shadow(0 0 8px rgba(128, 212, 255, 0.7));
+    }
+  </style>
   <script>
     const flame = document.getElementById('flame');
     const smoke = document.getElementById('smoke');
     const candle = document.getElementById('candle');
     const instruction = document.getElementById('instruction');
+    const status = document.getElementById('status');
     const messageCard = document.getElementById('messageCard');
+
     let isBlownOut = false;
     let audioCtx = null;
     let musicLooping = true;
+    let microphoneStarted = false;
+    let blowFrames = 0;
 
-    // Initialize Web Audio Context
+    // Cute, gentle Happy Birthday arrangement.
+    const NOTE = {
+      C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23,
+      G4: 392.00, A4: 440.00, B4: 493.88,
+      C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99
+    };
+
+    // Recognizable melody with a softer, lullaby-like rhythm.
+    const happyBirthday = [
+      ['G4', .42], ['G4', .42], ['A4', .78], ['G4', .78], ['C5', .78], ['B4', 1.15],
+      ['G4', .42], ['G4', .42], ['A4', .78], ['G4', .78], ['D5', .78], ['C5', 1.15],
+      ['G4', .42], ['G4', .42], ['G5', .78], ['E5', .78], ['C5', .78], ['B4', .78], ['A4', 1.15],
+      ['F4', .42], ['F4', .42], ['E4', .78], ['C5', .78], ['D5', .78], ['C5', 1.35]
+    ];
+
+    function getSongLength() {
+      return happyBirthday.reduce((total, [, duration]) => total + duration + 0.075, 0);
+    }
+
     async function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
+
       if (audioCtx.state === 'suspended') {
         await audioCtx.resume();
       }
-      playHappyBirthdayLullaby();
+
+      if (musicLooping && !isBlownOut) {
+        playHappyBirthday();
+      }
     }
 
-    function playNote(freq, duration, delay, type = 'sine') {
-      if (!audioCtx) return;
-      setTimeout(() => {
-        if (!musicLooping && isBlownOut) return;
+    function playCuteNote(freq, duration, delay = 0) {
+      if (!audioCtx || isBlownOut) return;
 
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+      const start = audioCtx.currentTime + delay;
 
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      // Main soft tone.
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
 
-        // Soft lullaby envelope
-        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration - 0.05);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.065, start + 0.055);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration + 0.12);
 
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      }, delay * 1000);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(start);
+      osc.stop(start + duration + 0.16);
+
+      // Very quiet higher "sparkle" makes the melody feel cute.
+      const sparkle = audioCtx.createOscillator();
+      const sparkleGain = audioCtx.createGain();
+
+      sparkle.type = 'triangle';
+      sparkle.frequency.setValueAtTime(freq * 2, start);
+
+      sparkleGain.gain.setValueAtTime(0.0001, start);
+      sparkleGain.gain.exponentialRampToValueAtTime(0.018, start + 0.04);
+      sparkleGain.gain.exponentialRampToValueAtTime(0.0001, start + duration * 0.7);
+
+      sparkle.connect(sparkleGain);
+      sparkleGain.connect(audioCtx.destination);
+
+      sparkle.start(start);
+      sparkle.stop(start + duration);
     }
 
-    function playHappyBirthdayLullaby() {
-      if (isBlownOut) return;
+    function playHappyBirthday() {
+      if (!audioCtx || isBlownOut || !musicLooping) return;
 
-      const C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23, G4 = 392.00, A4 = 440.00, B4 = 493.88, C5 = 523.25;
+      let delay = 0;
 
-      const song = [
-        { note: C4, duration: 0.8, delay: 0.0 },
-        { note: C4, duration: 0.8, delay: 0.8 },
-        { note: D4, duration: 1.2, delay: 1.6 },
-        { note: C4, duration: 1.2, delay: 2.8 },
-        { note: F4, duration: 1.2, delay: 4.0 },
-        { note: E4, duration: 2.0, delay: 5.2 },
-
-        { note: C4, duration: 0.8, delay: 7.4 },
-        { note: C4, duration: 0.8, delay: 8.2 },
-        { note: D4, duration: 1.2, delay: 9.0 },
-        { note: C4, duration: 1.2, delay: 10.2 },
-        { note: G4, duration: 1.2, delay: 11.4 },
-        { note: F4, duration: 2.0, delay: 12.6 },
-
-        { note: C4, duration: 0.8, delay: 14.8 },
-        { note: C4, duration: 0.8, delay: 15.6 },
-        { note: C5, duration: 1.2, delay: 16.4 },
-        { note: A4, duration: 1.2, delay: 17.6 },
-        { note: F4, duration: 1.2, delay: 18.8 },
-        { note: E4, duration: 1.2, delay: 20.0 },
-        { note: D4, duration: 2.0, delay: 21.2 },
-
-        { note: A4, duration: 0.8, delay: 23.4 },
-        { note: A4, duration: 0.8, delay: 24.2 },
-        { note: F4, duration: 1.2, delay: 25.0 },
-        { note: G4, duration: 1.2, delay: 26.2 },
-        { note: F4, duration: 2.5, delay: 27.4 }
-      ];
-
-      song.forEach(item => {
-        playNote(item.note, item.duration, item.delay, 'sine');
+      happyBirthday.forEach(([name, duration]) => {
+        playCuteNote(NOTE[name], duration, delay);
+        delay += duration + 0.075;
       });
 
-      // Loop lullaby every 31 seconds
+      // Tiny "music-box" ending sparkle.
+      const sparkleDelay = delay - 0.45;
+      playCuteNote(NOTE.E5, 0.25, sparkleDelay);
+      playCuteNote(NOTE.G5, 0.30, sparkleDelay + 0.16);
+
       setTimeout(() => {
-        if (!isBlownOut) {
-          playHappyBirthdayLullaby();
+        if (!isBlownOut && musicLooping) {
+          playHappyBirthday();
         }
-      }, 31000);
+      }, (getSongLength() + 0.5) * 1000);
     }
 
-    // Trigger birthday message & sound update
     function blowOutCandle() {
       if (isBlownOut) return;
+
       isBlownOut = true;
       musicLooping = false;
-      
-      flame.classList.add('out');
-      smoke.classList.add('active');
-      instruction.innerText = "✨ Wish Granted! ✨";
 
-      // Play soft chime chord on blow out
+      flame.classList.add('out');
+      smoke.classList.remove('active');
+      void smoke.offsetWidth; // Restart smoke animation if needed.
+      smoke.classList.add('active');
+
+      candle.classList.remove('ready');
+      instruction.innerText = '✨ Wish Granted! Happy Birthday! ✨';
+      status.innerText = '🕯️ The candle is out! Make a wish!';
+
+      // Soft celebratory chord.
       if (audioCtx) {
-        playNote(523.25, 2.5, 0.1, 'triangle');
-        playNote(659.25, 2.5, 0.2, 'triangle');
-        playNote(783.99, 3.0, 0.3, 'triangle');
+        playCuteNote(NOTE.C5, 1.1, 0.05);
+        playCuteNote(NOTE.E5, 1.1, 0.12);
+        playCuteNote(NOTE.G5, 1.4, 0.20);
       }
 
-      // Show birthday card
       setTimeout(() => {
         messageCard.classList.add('show');
       }, 700);
     }
 
-    // Event listeners
-    candle.addEventListener('click', blowOutCandle);
-    instruction.addEventListener('click', blowOutCandle);
+    // Manual fallback: clicking the candle also extinguishes it.
+    candle.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      await initAudio();
+      blowOutCandle();
+    });
 
-    // Microphone blow detection
-    async function initMicrophone() {
+    // Start music + microphone after the user's first tap/click.
+    async function startExperience() {
+      if (isBlownOut) return;
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const analyser = audioCtx.createAnalyser();
-        const microphone = audioCtx.createMediaStreamSource(stream);
-        
-        analyser.fftSize = 256;
-        microphone.connect(analyser);
+        await initAudio();
+        await initMicrophone();
 
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-        function checkVolume() {
-          if (isBlownOut) return;
-
-          analyser.getByteFrequencyData(dataArray);
-          let sum = 0;
-          for (let i = 0; i < dataArray.length; i++) {
-            sum += dataArray[i];
-          }
-          let average = sum / dataArray.length;
-
-          if (average > 45) {
-            blowOutCandle();
-          } else {
-            requestAnimationFrame(checkVolume);
-          }
-        }
-
-        checkVolume();
+        candle.classList.add('ready');
+        instruction.innerText = '🎤 Now blow toward your microphone to put out the candle!';
+        status.innerText = 'Listening for a strong breath…';
       } catch (err) {
-        console.log("Microphone access denied or not supported.");
+        status.innerText = 'If Microphone unavailable — click the candle to blow it out.';
+        instruction.innerText = 'Click the candle if your microphone is unavailable';
       }
     }
 
-    document.body.addEventListener('click', () => {
-      initAudio();
-      initMicrophone();
-    }, { once: true });
+    instruction.addEventListener('click', startExperience);
 
-    // Background floating elements generator
+    // Also allow any first tap on the page to start the experience.
+    document.body.addEventListener('click', startExperience, { once: true });
+
+    async function initMicrophone() {
+      if (microphoneStarted || !navigator.mediaDevices?.getUserMedia || !audioCtx) {
+        return;
+      }
+
+      microphoneStarted = true;
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
+
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.25;
+
+      const microphone = audioCtx.createMediaStreamSource(stream);
+      microphone.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.fftSize);
+
+      function checkForBlow() {
+        if (isBlownOut) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
+        analyser.getByteTimeDomainData(dataArray);
+
+        // RMS measures actual microphone loudness more reliably than
+        // averaging frequency bins, so normal speech is less likely
+        // to trigger the candle accidentally.
+        let sumSquares = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const normalized = (dataArray[i] - 128) / 128;
+          sumSquares += normalized * normalized;
+        }
+
+        const rms = Math.sqrt(sumSquares / dataArray.length);
+
+        // Require a loud breath for several animation frames.
+        if (rms > 0.085) {
+          blowFrames++;
+        } else {
+          blowFrames = Math.max(0, blowFrames - 2);
+        }
+
+        if (blowFrames >= 5) {
+          blowOutCandle();
+          return;
+        }
+
+        requestAnimationFrame(checkForBlow);
+      }
+
+      checkForBlow();
+    }
+
+    // Background floating elements generator.
     const particlesContainer = document.getElementById('particles');
     const totalParticles = 40;
 
     for (let i = 0; i < totalParticles; i++) {
       const particle = document.createElement('div');
       const isHeart = Math.random() > 0.4;
-      
+
       particle.className = isHeart ? 'heart' : 'balloon';
-      
+
       const left = Math.random() * 100;
       const duration = 6 + Math.random() * 8;
       const delay = Math.random() * 5;
