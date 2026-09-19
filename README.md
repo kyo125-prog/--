@@ -349,7 +349,7 @@
 
     <!-- Birthday Message Popup Card -->
     <div class="message-card" id="messageCard">
-      <h2>Make a Wish! 🎉</h2>
+      <h2>Happy Intal's Day! 🎉</h2>
       <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead, God bless you always Intal💙☺️!</p>
     </div>
   </div>
