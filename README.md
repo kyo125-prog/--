@@ -328,8 +328,8 @@
 
     <!-- Title -->
     <h1 class="title">Happy Birthday Intal!</h1>
-    <p class="instruction" id="instruction"> Click or blow into your microphone to extinguish the candle</p>
-    <p class="status" id="status">Microphone is waiting for your first tap.</p>
+    <p class="instruction" id="instruction"> Click the candle or blow your microphone to extinguish</p>
+    <p class="status" id="status">Click na dayun kay wala ka naman choice HAHAHAHA.</p>
 
     <!-- 3D Cake Container -->
     <div class="cake-container" id="cake">
@@ -350,7 +350,7 @@
     <!-- Birthday Message Popup Card -->
     <div class="message-card" id="messageCard">
       <h2>Make a Wish! 🎉</h2>
-      <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead, God bless you always Intal💙!</p>
+      <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead, God bless you always Intal💙☺️!</p>
     </div>
   </div>
 
