@@ -328,7 +328,7 @@
 
     <!-- Title -->
     <h1 class="title">Happy Birthday Intal!</h1>
-    <p class="instruction" id="instruction"> Click the candle or blow your microphone to extinguish</p>
+    <p class="instruction" id="instruction"> Click ang candle tal then wish HAHAHAHA</p>
     <p class="status" id="status">Click na dayun kay wala ka naman choice HAHAHAHA.</p>
 
     <!-- 3D Cake Container -->
