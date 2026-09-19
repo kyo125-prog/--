@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Happy Birthday!</title>
+  <title>Happy Birthday Intal!</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap');
 
@@ -327,7 +327,7 @@
     <div class="particles" id="particles"></div>
 
     <!-- Title -->
-    <h1 class="title">Happy Birthday Intal</h1>
+    <h1 class="title">Happy Birthday Intal!</h1>
     <p class="instruction" id="instruction">Click anywhere to start music & blow candle!</p>
 
     <!-- 3D Cake Container -->
@@ -349,7 +349,7 @@
     <!-- Birthday Message Popup Card -->
     <div class="message-card" id="messageCard">
       <h2>Make a Wish! 🎉</h2>
-      <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead! God bless you always Intal💙💙💙💙💙</p>
+      <p>May your day be filled with endless joy, unforgettable moments, laughter, and all the love you deserve. Here’s to an amazing year ahead, God Bless you always Intal!💙💙💙💙💙</p>
     </div>
   </div>
 
@@ -363,12 +363,15 @@
     let audioCtx = null;
     let musicLooping = true;
 
-    // --- Lullaby Sound Synthesizer (Web Audio API) ---
-    function initAudio() {
+    // Initialize Web Audio Context
+    async function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        playHappyBirthdayLullaby();
       }
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+      playHappyBirthdayLullaby();
     }
 
     function playNote(freq, duration, delay, type = 'sine') {
@@ -384,7 +387,7 @@
 
         // Soft lullaby envelope
         gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.1);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration - 0.05);
 
         osc.connect(gain);
@@ -396,49 +399,50 @@
     }
 
     function playHappyBirthdayLullaby() {
-      // Notes & frequencies for Happy Birthday Tune
+      if (isBlownOut) return;
+
       const C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23, G4 = 392.00, A4 = 440.00, B4 = 493.88, C5 = 523.25;
 
       const song = [
-        { note: C4, duration: 0.6, delay: 0.0 },
-        { note: C4, duration: 0.6, delay: 0.6 },
-        { note: D4, duration: 1.0, delay: 1.2 },
-        { note: C4, duration: 1.0, delay: 2.2 },
-        { note: F4, duration: 1.0, delay: 3.2 },
-        { note: E4, duration: 1.8, delay: 4.2 },
+        { note: C4, duration: 0.8, delay: 0.0 },
+        { note: C4, duration: 0.8, delay: 0.8 },
+        { note: D4, duration: 1.2, delay: 1.6 },
+        { note: C4, duration: 1.2, delay: 2.8 },
+        { note: F4, duration: 1.2, delay: 4.0 },
+        { note: E4, duration: 2.0, delay: 5.2 },
 
-        { note: C4, duration: 0.6, delay: 6.2 },
-        { note: C4, duration: 0.6, delay: 6.8 },
-        { note: D4, duration: 1.0, delay: 7.4 },
-        { note: C4, duration: 1.0, delay: 8.4 },
-        { note: G4, duration: 1.0, delay: 9.4 },
-        { note: F4, duration: 1.8, delay: 10.4 },
+        { note: C4, duration: 0.8, delay: 7.4 },
+        { note: C4, duration: 0.8, delay: 8.2 },
+        { note: D4, duration: 1.2, delay: 9.0 },
+        { note: C4, duration: 1.2, delay: 10.2 },
+        { note: G4, duration: 1.2, delay: 11.4 },
+        { note: F4, duration: 2.0, delay: 12.6 },
 
-        { note: C4, duration: 0.6, delay: 12.4 },
-        { note: C4, duration: 0.6, delay: 13.0 },
-        { note: C5, duration: 1.0, delay: 13.6 },
-        { note: A4, duration: 1.0, delay: 14.6 },
-        { note: F4, duration: 1.0, delay: 15.6 },
-        { note: E4, duration: 1.0, delay: 16.6 },
-        { note: D4, duration: 1.8, delay: 17.6 },
+        { note: C4, duration: 0.8, delay: 14.8 },
+        { note: C4, duration: 0.8, delay: 15.6 },
+        { note: C5, duration: 1.2, delay: 16.4 },
+        { note: A4, duration: 1.2, delay: 17.6 },
+        { note: F4, duration: 1.2, delay: 18.8 },
+        { note: E4, duration: 1.2, delay: 20.0 },
+        { note: D4, duration: 2.0, delay: 21.2 },
 
-        { note: A4, duration: 0.6, delay: 19.6 },
-        { note: A4, duration: 0.6, delay: 20.2 },
-        { note: F4, duration: 1.0, delay: 20.8 },
-        { note: G4, duration: 1.0, delay: 21.8 },
-        { note: F4, duration: 2.2, delay: 22.8 }
+        { note: A4, duration: 0.8, delay: 23.4 },
+        { note: A4, duration: 0.8, delay: 24.2 },
+        { note: F4, duration: 1.2, delay: 25.0 },
+        { note: G4, duration: 1.2, delay: 26.2 },
+        { note: F4, duration: 2.5, delay: 27.4 }
       ];
 
       song.forEach(item => {
         playNote(item.note, item.duration, item.delay, 'sine');
       });
 
-      // Loop lullaby every 26 seconds
+      // Loop lullaby every 31 seconds
       setTimeout(() => {
         if (!isBlownOut) {
           playHappyBirthdayLullaby();
         }
-      }, 26000);
+      }, 31000);
     }
 
     // Trigger birthday message & sound update
@@ -451,7 +455,7 @@
       smoke.classList.add('active');
       instruction.innerText = "✨ Wish Granted! ✨";
 
-      // Play chime chord on blow out
+      // Play soft chime chord on blow out
       if (audioCtx) {
         playNote(523.25, 2.5, 0.1, 'triangle');
         playNote(659.25, 2.5, 0.2, 'triangle');
